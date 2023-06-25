@@ -8,32 +8,24 @@ import core.ui.component.dialog.AppSeting;
 import core.ui.component.dialog.GenerateShellLoder;
 import core.ui.component.dialog.PluginManage;
 import core.ui.component.dialog.ShellSetting;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
-import java.awt.PopupMenu;
-import java.awt.Toolkit;
+import util.Log;
+import util.automaticBindClick;
+import util.functions;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import util.Log;
-import util.automaticBindClick;
-import util.functions;
 
 public class MainActivity extends JFrame {
     private static MainActivity mainActivityFrame;
     private static JMenuBar menuBar;
     private static JMenu pluginMenu;
+
+    // 点击右键的弹出菜单
     private static JPopupMenu shellViewPopupMenu;
     private JMenu aboutMenu;
     private JMenu attackMenu;
@@ -49,6 +41,7 @@ public class MainActivity extends JFrame {
         shellViewPopupMenu = new JPopupMenu();
     }
 
+    // 程序入口
     public MainActivity() {
         ApplicationContext.init();
         try {
@@ -63,24 +56,38 @@ public class MainActivity extends JFrame {
     }
 
     private void initVariable() {
+        // 设置frame标题
         setTitle(String.format("哥斯拉\t V%s by: BeichenDream Github:https://github.com/BeichenDream/Godzilla", ApplicationContext.VERSION));
+        // 设置frame布局
         setLayout(new BorderLayout(1, 1));
+        // 从data.db文件中获取shell信息，也就是已添加的shell连接信息
         Vector<Vector<String>> rows = Db.getAllShell();
+        // 第一行是shell信息的字段信息
         this.columnVector = rows.get(0);
         rows.remove(0);
+
+        // DataView是JTable的子类，以Table的形式展示shell信息
         this.shellView = new DataView(null, this.columnVector, -1, -1);
         this.shellView.AddRows(rows);
+
+        // 使用shellView创建一个滚动面板
         JScrollPane jScrollPane = new JScrollPane(this.shellView);
         this.shellViewScrollPane = jScrollPane;
+        // 将滚动面板添加到frame中
         add(jScrollPane);
+
+        // JMenubar菜单栏界面的展示
+        // “目标”菜单
         this.targetMenu = new JMenu("目标");
         JMenuItem addShellMenuItem = new JMenuItem("添加");
         addShellMenuItem.setActionCommand("addShell");
         this.targetMenu.add(addShellMenuItem);
+        // “管理”菜单
         this.attackMenu = new JMenu("管理");
         JMenuItem generateShellMenuItem = new JMenuItem("生成");
         generateShellMenuItem.setActionCommand("generateShell");
         this.attackMenu.add(generateShellMenuItem);
+        // “配置”菜单
         this.configMenu = new JMenu("配置");
         JMenuItem pluginConfigMenuItem = new JMenuItem("插件配置");
         pluginConfigMenuItem.setActionCommand("pluginConfig");
@@ -88,19 +95,25 @@ public class MainActivity extends JFrame {
         appConfigMenuItem.setActionCommand("appConfig");
         this.configMenu.add(appConfigMenuItem);
         this.configMenu.add(pluginConfigMenuItem);
+        // “关于”菜单
         this.aboutMenu = new JMenu("关于");
         JMenuItem aboutMenuItem = new JMenuItem("关于");
         aboutMenuItem.setActionCommand("about");
         this.aboutMenu.add(aboutMenuItem);
+
+        // 对JMenu中的JMenuItem绑定点击监听事件
         automaticBindClick.bindMenuItemClick(this.targetMenu, null, this);
         automaticBindClick.bindMenuItemClick(this.attackMenu, null, this);
         automaticBindClick.bindMenuItemClick(this.configMenu, null, this);
         automaticBindClick.bindMenuItemClick(this.aboutMenu, null, this);
+
+        // 将菜单添加进菜单栏中，并将菜单栏添加到frame
         menuBar.add(this.targetMenu);
         menuBar.add(this.attackMenu);
         menuBar.add(this.configMenu);
         menuBar.add(this.aboutMenu);
         menuBar.add(pluginMenu);
+        // 设置frame的菜单栏
         setJMenuBar(menuBar);
         JMenuItem copyselectItem = new JMenuItem("复制选中");
         copyselectItem.setActionCommand("copyShellViewSelected");
@@ -120,19 +133,23 @@ public class MainActivity extends JFrame {
         shellViewPopupMenu.add(editShell);
         shellViewPopupMenu.add(copyShellMenuItem);
         shellViewPopupMenu.add(refreshShell);
+        // shellView控件设置右键菜单
         this.shellView.setRightClickMenu(shellViewPopupMenu);
+        // shellViewPopupMenu中的JMenuItem添加点击监听事件
         automaticBindClick.bindMenuItemClick(shellViewPopupMenu, null, this);
+        // 添加复活节彩蛋，应该是点击某个键会弹出一段话
         addEasterEgg();
+        // 设置frame的大小
         functions.setWindowSize(this, 1500, 600);
         setLocationRelativeTo(null);
+        // 表示数据模型已经构造好了，允许JVM可以根据数据模型执行paint方法开始画图并显示到屏幕上了
+        // 起到同步的作用
         setVisible(true);
         setDefaultCloseOperation(3);
     }
 
     private void addEasterEgg() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-             
-
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getKeyCode() != 112 || !ApplicationContext.easterEgg) {
                     return false;
@@ -163,6 +180,7 @@ public class MainActivity extends JFrame {
 
     private void aboutMenuItemClick(ActionEvent e) {
         JOptionPane.showMessageDialog(getFrame(), "下一代Webshell技术\n\t由BeichenDream强力驱动\n邮箱:beichendream@gmail.com", "About", -1);
+        // 使用浏览器打开GIT指向的链接
         functions.openBrowseUrl(ApplicationConfig.GIT);
     }
 
@@ -207,6 +225,7 @@ public class MainActivity extends JFrame {
     }
 
     private void interactMenuItemClick(ActionEvent e) {
+        // 常见新的frame
         new ShellManage((String) this.shellView.getValueAt(this.shellView.getSelectedRow(), 0));
     }
 

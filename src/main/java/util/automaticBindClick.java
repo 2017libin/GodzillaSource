@@ -88,15 +88,19 @@ public class automaticBindClick {
         }
     }
 
+    // 对JMenuItem绑定点击监听事件
     public static void bindMenuItemClick(Object item, Map<String, Method> methodMap, Object eventClass) {
         MenuElement[] menuElements = ((MenuElement) item).getSubElements();
         if (methodMap == null) {
+            // 通过反射获取到eventClass类中定义的方法，这些方法满足一定的条件，例如“MenuItemClick”结尾
             methodMap = getMenuItemMethod(eventClass);
         }
         if (menuElements.length != 0) {
             for (MenuElement menuElement : menuElements) {
                 Class<?> itemClass = menuElement.getClass();
+                // 判断一个类是否可以被强制转换为另外一个实例对象
                 if (itemClass.isAssignableFrom(JPopupMenu.class) || itemClass.isAssignableFrom(JMenu.class)) {
+                    // 如果menuElement为JMemu/JPopupMenu，则进行递归处理
                     bindMenuItemClick(menuElement, methodMap, eventClass);
                 } else if (item.getClass().isAssignableFrom(JMenuItem.class)) {
                     addMenuItemClickEvent(menuElement, methodMap.get(((JMenuItem) menuElement).getActionCommand() + "MenuItemClick"), eventClass);

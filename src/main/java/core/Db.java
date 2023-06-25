@@ -1,20 +1,15 @@
 package core;
 
 import core.shell.ShellEntity;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import util.Log;
+import util.functions;
+
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 import java.util.Vector;
-import util.Log;
-import util.functions;
 
 public class Db {
     private static final String CREATE_PLUGIN_TABLE = "CREATE TABLE plugin (pluginJarFile TEXT NOT NULL,PRIMARY KEY (\"pluginJarFile\"))";
@@ -65,15 +60,19 @@ public class Db {
         return ret;
     }
 
+    // 获取历史的连接记录信息
     public static synchronized Vector<Vector<String>> getAllShell() {
         Vector<Vector<String>> rows;
+        // synchronized 关键字可以保证同一时刻只有一个线程在执行代码块
         synchronized (Db.class) {
             rows = new Vector<>();
             try {
                 Statement statement = getStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT id,url,payload,cryption,encoding,proxyType,remark,createTime,updateTime FROM shell");
+                // 获取数据库的列名
                 Vector<String> columns = getAllcolumn(resultSet.getMetaData());
                 rows.add(columns);
+                // 获取数据库的数据，其实就是历史的连接记录
                 while (resultSet.next()) {
                     Vector<String> rowVector = new Vector<>();
                     for (int i = 0; i < columns.size(); i++) {
@@ -470,6 +469,7 @@ public class Db {
         }
     }
 
+    // 获取列名
     private static Vector<String> getAllcolumn(ResultSetMetaData metaData) {
         if (metaData == null) {
             return null;

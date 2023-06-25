@@ -42,6 +42,7 @@ public class DataView extends JTable {
     private TableRowSorter sorter;
 
     private void initJtableConfig() {
+        // 添加单击右键的监听事件
         this.rightClickEvent = new RightClickEvent(this.rightClickMenu, this);
         addMouseListener(this.rightClickEvent);
         setSelectionMode(0);
